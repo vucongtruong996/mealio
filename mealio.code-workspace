@@ -1,41 +1,15 @@
 {
   "folders": [
-    {
-      "name": "Root",
-      "path": "."
-    },
-    {
-      "name": "Docs",
-      "path": "docs"
-    },
-    {
-      "name": "Menu Service",
-      "path": "mealio-menu-service"
-    },
-    {
-      "name": "Order Service",
-      "path": "mealio-order-service"
-    },
-    {
-      "name": "User Service",
-      "path": "mealio-user-service"
-    },
-    {
-      "name": "Inventory Service",
-      "path": "mealio-inventory-service"
-    },
-    {
-      "name": "AI Service",
-      "path": "mealio-ai-service"
-    },
-    {
-      "name": "Contracts",
-      "path": "mealio-contracts"
-    },
-    {
-      "name": "Infrastructure",
-      "path": "mealio-infra"
-    }
+    { "path": "." },
+    { "path": "docs" },
+    { "path": "mealio-gateway" },
+    { "path": "mealio-menu-service" },
+    { "path": "mealio-order-service" },
+    { "path": "mealio-user-service" },
+    { "path": "mealio-inventory-service" },
+    { "path": "mealio-ai-service" },
+    { "path": "mealio-contracts" },
+    { "path": "mealio-infra" }
   ],
   "settings": {
     "files.exclude": {
