@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: mealio-postgres
+
+    environment:
+      POSTGRES_USER: mealio
+      POSTGRES_PASSWORD: mealio
+      POSTGRES_DB: mealio
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres-data:
