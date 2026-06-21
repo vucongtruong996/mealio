@@ -2,21 +2,21 @@ package com.mealio.mealio_menu_service.domain.model;
 
 import java.util.UUID;
 
+import com.mealio.mealio_menu_service.domain.exception.CategoryNameCannotBeBlankException;
+
 public class Category {
 
     private final UUID id;
     private final String name;
     private final String description;
 
-    public Category(
+    private Category(
         UUID id,
         String name,
         String description) {
 
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException(
-                "Category name must not be blank"
-            );
+            throw new CategoryNameCannotBeBlankException();
         }
 
         this.id = id;
@@ -34,5 +34,9 @@ public class Category {
 
     public String getDescription() {
         return description;
+    }
+
+    public static Category create(String name2, String description2) {
+        return new Category(UUID.randomUUID(), name2, description2);
     }
 }
