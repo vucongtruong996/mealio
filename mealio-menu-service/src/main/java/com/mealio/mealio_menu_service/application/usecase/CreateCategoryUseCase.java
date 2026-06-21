@@ -1,7 +1,6 @@
 package com.mealio.mealio_menu_service.application.usecase;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import com.mealio.mealio_menu_service.application.command.CreateCategoryCommand;
 import com.mealio.mealio_menu_service.application.dto.CreateCategoryResponse;
