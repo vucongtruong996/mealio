@@ -36,7 +36,11 @@ public class Category {
         return description;
     }
 
-    public static Category create(String name2, String description2) {
-        return new Category(UUID.randomUUID(), name2, description2);
+    public static Category create(String name, String description) {
+        return new Category(UUID.randomUUID(), name, description);
+    }
+
+    public static Category restore(UUID id, String name, String description) {
+        return new Category(id, name, description);
     }
 }
