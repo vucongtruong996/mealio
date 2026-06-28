@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.mealio.mealio_menu_service.application.command.CreateCategoryCommand;
-import com.mealio.mealio_menu_service.application.dto.CreateCategoryResponse;
+import com.mealio.mealio_menu_service.application.result.CategoryResult;
 import com.mealio.mealio_menu_service.domain.exception.CategoryAlreadyExistsException;
 import com.mealio.mealio_menu_service.domain.model.Category;
 import com.mealio.mealio_menu_service.domain.repository.CategoryRepository;
@@ -38,7 +38,7 @@ public class CreateCategoryUseCaseTest {
         when(mockCategoryRepository.save(any(Category.class))).thenReturn(category);
 
         //Act
-        CreateCategoryResponse response = createCategoryUseCase.execute(command);
+        CategoryResult response = createCategoryUseCase.execute(command);
 
         //Verify
         assertThat(response.name()).isEqualTo("Breakfast");
