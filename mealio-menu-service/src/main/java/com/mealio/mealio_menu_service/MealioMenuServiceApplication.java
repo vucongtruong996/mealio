@@ -9,5 +9,5 @@ public class MealioMenuServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(MealioMenuServiceApplication.class, args);
 	}
-
+	
 }

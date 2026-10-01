@@ -3,13 +3,27 @@ package com.mealio.mealio_menu_service.domain.repository;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
+
 import com.mealio.mealio_menu_service.domain.model.Category;
 
 public interface CategoryRepository {
-    Category save(Category category);
+    @NonNull
+    Category save(@NonNull Category category);
 
-    Optional<Category> findById(UUID id);
+    @NonNull
+    Iterable<Category> saveAll(@NonNull Iterable<Category> categories);
 
-    Optional<Category> findByName(String name);
+    Optional<Category> findById(@NonNull UUID id);
 
+    Optional<Category> findByName(@NonNull String name);
+
+    boolean existsByName(@NonNull String name);
+
+    @NonNull
+    Page<Category> findAll(@NonNull Pageable pageable);
+
+    void deleteById(@NonNull UUID id);
 }

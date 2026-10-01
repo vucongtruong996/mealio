@@ -21,7 +21,8 @@ public final class CategoryPresentationMapper {
         return new CategoryResponse(
             response.id(),
             response.name(),
-            response.description()
+            response.description(),
+            response.isActive()
         );
     }
 }

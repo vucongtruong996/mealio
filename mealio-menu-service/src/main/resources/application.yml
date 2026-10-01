@@ -9,6 +9,9 @@ spring:
     hibernate:
       ddl-auto: update
 
+    properties:
+      hibernate.jdbc.time_zone: UTC
+
   flyway:
     enabled: true
     schemas: menu_schema

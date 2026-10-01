@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleCategoryAlreadyExistsException(CategoryAlreadyExistsException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
         problemDetail.setTitle("Category Already Exists");
-        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setDetail(ex.getMessage().replace("'", ""));
         problemDetail.setType(URI.create("errors/category-already-exists"));
         return problemDetail;
     }

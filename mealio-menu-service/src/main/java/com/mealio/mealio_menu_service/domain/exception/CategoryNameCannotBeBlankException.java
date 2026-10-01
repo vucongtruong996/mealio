@@ -1,8 +1,9 @@
 package com.mealio.mealio_menu_service.domain.exception;
 
-public class CategoryNameCannotBeBlankException extends IllegalArgumentException {
+public final class CategoryNameCannotBeBlankException extends CategoryException {
+    
     public CategoryNameCannotBeBlankException() {
-        super("Category name must not be blank");
+        super("Category name cannot be blank.");
     }
     
 }

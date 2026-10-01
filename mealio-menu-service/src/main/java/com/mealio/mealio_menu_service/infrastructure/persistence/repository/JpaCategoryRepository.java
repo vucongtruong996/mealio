@@ -10,4 +10,6 @@ import com.mealio.mealio_menu_service.infrastructure.persistence.entity.Category
 public interface JpaCategoryRepository extends JpaRepository<CategoryEntity, UUID> {
     
     Optional<CategoryEntity> findByName(String name);   
+
+    boolean existsByName(String name);
 }

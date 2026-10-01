@@ -1,8 +1,8 @@
 package com.mealio.mealio_menu_service.domain.exception;
 
-public class CategoryAlreadyExistsException extends RuntimeException {
-    public CategoryAlreadyExistsException(String message) {
-        super("Category already exists: " + message);
-    }
+public final class CategoryAlreadyExistsException extends CategoryException {
     
+    public CategoryAlreadyExistsException(String categoryName) {
+        super("Category '%s' already exists.".formatted(categoryName));
+    }
 }

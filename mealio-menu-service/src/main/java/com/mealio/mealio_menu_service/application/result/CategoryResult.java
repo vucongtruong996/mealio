@@ -5,6 +5,8 @@ import java.util.UUID;
 public record CategoryResult(
     UUID id,
     String name,
-    String description
+    String description,
+    boolean isActive
 ) {
+
 }
