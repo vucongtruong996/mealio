@@ -1,8 +1,10 @@
 package com.mealio.mealio_menu_service.presentation.mapper;
 
 import com.mealio.mealio_menu_service.application.command.CreateCategoryCommand;
+import com.mealio.mealio_menu_service.application.command.UpdateCategoryCommand;
 import com.mealio.mealio_menu_service.application.result.CategoryResult;
 import com.mealio.mealio_menu_service.presentation.request.CreateCategoryRequest;
+import com.mealio.mealio_menu_service.presentation.request.UpdateCategoryRequest;
 import com.mealio.mealio_menu_service.presentation.response.CategoryResponse;
 
 public final class CategoryPresentationMapper {
@@ -24,5 +26,9 @@ public final class CategoryPresentationMapper {
             response.description(),
             response.isActive()
         );
+    }
+
+    public static UpdateCategoryCommand toUpdateCategoryCommand(UpdateCategoryRequest request) {
+        return new UpdateCategoryCommand(request.name(), request.description());
     }
 }

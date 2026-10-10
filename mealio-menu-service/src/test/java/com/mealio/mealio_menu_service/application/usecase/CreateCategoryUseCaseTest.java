@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.mealio.mealio_menu_service.application.command.CreateCategoryCommand;
 import com.mealio.mealio_menu_service.application.mapper.CategoryApplicationMapper;
 import com.mealio.mealio_menu_service.application.result.CategoryResult;
-import com.mealio.mealio_menu_service.application.usecase.category.CreateCategoryUseCase;
+import com.mealio.mealio_menu_service.application.usecase.implement.CreateCategoryUseCaseImpl;
 import com.mealio.mealio_menu_service.domain.exception.CategoryAlreadyExistsException;
 import com.mealio.mealio_menu_service.domain.model.Category;
 import com.mealio.mealio_menu_service.domain.repository.CategoryRepository;
@@ -38,7 +38,7 @@ public class CreateCategoryUseCaseTest {
     private CategoryApplicationMapper categoryApplicationMapper;
 
     @InjectMocks
-    private CreateCategoryUseCase createCategoryUseCase;
+    private CreateCategoryUseCaseImpl createCategoryUseCase;
 
     @Captor
     private ArgumentCaptor<Category> categoryCaptor;

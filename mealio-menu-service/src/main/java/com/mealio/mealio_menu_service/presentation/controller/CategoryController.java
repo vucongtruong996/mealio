@@ -21,9 +21,13 @@ import com.mealio.mealio_menu_service.application.command.CreateCategoryCommand;
 import com.mealio.mealio_menu_service.application.result.CategoryResult;
 import com.mealio.mealio_menu_service.application.usecase.category.BulkCreateCategoryUseCase;
 import com.mealio.mealio_menu_service.application.usecase.category.CreateCategoryUseCase;
+import com.mealio.mealio_menu_service.application.usecase.category.GetCategoryByIdUseCase;
+import com.mealio.mealio_menu_service.application.usecase.category.UpdateCategoryUseCase;
+import com.mealio.mealio_menu_service.application.usecase.category.DeleteCategoryUseCase;
 import com.mealio.mealio_menu_service.application.usecase.category.ListCategoriesUseCase;
 import com.mealio.mealio_menu_service.presentation.mapper.CategoryPresentationMapper;
 import com.mealio.mealio_menu_service.presentation.request.CreateCategoryRequest;
+import com.mealio.mealio_menu_service.presentation.request.UpdateCategoryRequest;
 import com.mealio.mealio_menu_service.presentation.response.CategoryResponse;
 
 import jakarta.validation.Valid;
@@ -37,6 +41,9 @@ public class CategoryController {
     private final CreateCategoryUseCase createCategoryUseCase;
     private final BulkCreateCategoryUseCase bulkCreateCategoryUseCase;
     private final ListCategoriesUseCase listCategoriesUseCase;
+    private final GetCategoryByIdUseCase getCategoryByIdUseCase;
+    private final UpdateCategoryUseCase updateCategoryUseCase;
+    private final DeleteCategoryUseCase deleteCategoryUseCase;
 
     @PostMapping
     public ResponseEntity<CategoryResponse> create(@Valid @RequestBody @NonNull CreateCategoryRequest request) {
@@ -79,29 +86,24 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable UUID id) {
-        // Implement the logic to retrieve the category by ID
-        // For example, you can call a use case to get the category and return the response
-        
-        return ResponseEntity.ok().build(); // Placeholder response 
+    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable("id") UUID id) {
+        CategoryResult result = getCategoryByIdUseCase.execute(id);
+
+        return ResponseEntity.ok(CategoryPresentationMapper.toCategoryResponse(result));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable UUID id
-        , @Valid @RequestBody CreateCategoryRequest request) {
-        // Implement the logic to update the category by ID
-        // For example, you can call a use case to update the category and return the response
-        
-        return ResponseEntity.ok().build(); // Placeholder response 
+    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable("id") UUID id,
+            @Valid @RequestBody UpdateCategoryRequest request) {
+        CategoryResult result = updateCategoryUseCase.execute(
+                id, CategoryPresentationMapper.toUpdateCategoryCommand(request));
+        return ResponseEntity.ok(CategoryPresentationMapper.toCategoryResponse(result));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
-        // Implement the logic to delete the category by ID
-        // For example, you can call a use case to delete the category  
-
-        
-        return ResponseEntity.noContent().build(); // Placeholder response
+    public ResponseEntity<Void> deleteCategory(@PathVariable("id") UUID id) {
+        deleteCategoryUseCase.execute(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

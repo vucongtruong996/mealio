@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mealio.mealio_menu_service.domain.model.Category;
 import com.mealio.mealio_menu_service.domain.repository.CategoryRepository;
@@ -24,10 +25,19 @@ public class CategoryPersistenceRepository implements CategoryRepository {
     private final CategoryPersistenceMapper categoryPersistenceMapper;
 
     @Override
+    @Transactional
     public @NonNull Category save(@NonNull Category category) {
         Objects.requireNonNull(category, "category must not be null");
 
-        CategoryEntity entity = categoryPersistenceMapper.toEntity(category);
+        CategoryEntity entity = jpaCategoryRepository.findById(category.getId())
+                .orElseGet(() -> categoryPersistenceMapper.toEntity(category));
+        entity.changeName(category.getName());
+        entity.changeDescription(category.getDescription());
+        if (category.isActive()) {
+            entity.activate();
+        } else {
+            entity.deactivate();
+        }
         CategoryEntity savedEntity = Objects.requireNonNull(jpaCategoryRepository.save(entity), "saved entity must not be null");
 
         return categoryPersistenceMapper.toDomain(savedEntity);

@@ -30,8 +30,6 @@ The project is designed to demonstrate production-level backend engineering usin
 
 ## Documentation
 
-See:
+See the [documentation index](docs/README.md) for architecture and development guidelines.
 
-docs/
-
-for complete architecture and development guidelines.
+For future Category changes, start with the [menu service maintenance guide](docs/maintenance/menu-service.md).

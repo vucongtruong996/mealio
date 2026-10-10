@@ -2,6 +2,7 @@ package com.mealio.mealio_menu_service.presentation.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -26,8 +27,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mealio.mealio_menu_service.application.command.CreateCategoryCommand;
 import com.mealio.mealio_menu_service.application.result.CategoryResult;
 import com.mealio.mealio_menu_service.application.usecase.category.CreateCategoryUseCase;
+import com.mealio.mealio_menu_service.application.usecase.category.BulkCreateCategoryUseCase;
+import com.mealio.mealio_menu_service.application.usecase.category.GetCategoryByIdUseCase;
+import com.mealio.mealio_menu_service.application.usecase.category.UpdateCategoryUseCase;
+import com.mealio.mealio_menu_service.application.usecase.category.DeleteCategoryUseCase;
 import com.mealio.mealio_menu_service.application.usecase.category.ListCategoriesUseCase;
 import com.mealio.mealio_menu_service.domain.exception.CategoryAlreadyExistsException;
+import com.mealio.mealio_menu_service.domain.exception.CategoryNotFoundException;
 import com.mealio.mealio_menu_service.presentation.advice.GlobalExceptionHandler;
 import com.mealio.mealio_menu_service.presentation.request.CreateCategoryRequest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -48,6 +54,70 @@ public class CategoryControllerTest {
 
     @MockitoBean
     private ListCategoriesUseCase listCategoriesUseCase;
+
+    @MockitoBean
+    private BulkCreateCategoryUseCase bulkCreateCategoryUseCase;
+
+    @MockitoBean
+    private GetCategoryByIdUseCase getCategoryByIdUseCase;
+
+    @MockitoBean
+    private UpdateCategoryUseCase updateCategoryUseCase;
+
+    @MockitoBean
+    private DeleteCategoryUseCase deleteCategoryUseCase;
+
+    @Test
+    void shouldReturnCategoryById() throws Exception {
+        // Given
+        UUID id = UUID.randomUUID();
+        when(getCategoryByIdUseCase.execute(id))
+                .thenReturn(new CategoryResult(id, "Breakfast", "Morning meals", true));
+
+        // When / Then
+        mockMvc.perform(get("/api/v1/categories/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(id.toString()))
+                .andExpect(jsonPath("$.name").value("Breakfast"))
+                .andExpect(jsonPath("$.description").value("Morning meals"))
+                .andExpect(jsonPath("$.isActive").value(true))
+                .andExpect(jsonPath("$.createdBy").doesNotExist())
+                .andExpect(jsonPath("$.createdAt").doesNotExist())
+                .andExpect(jsonPath("$.updatedBy").doesNotExist())
+                .andExpect(jsonPath("$.updatedAt").doesNotExist());
+
+        verify(getCategoryByIdUseCase).execute(id);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenCategoryDoesNotExist() throws Exception {
+        // Given
+        UUID id = UUID.randomUUID();
+        when(getCategoryByIdUseCase.execute(id))
+                .thenThrow(new CategoryNotFoundException(id.toString()));
+
+        // When / Then
+        mockMvc.perform(get("/api/v1/categories/{id}", id))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Category Not Found"))
+                .andExpect(jsonPath("$.detail").value("Category '" + id + "' was not found."))
+                .andExpect(jsonPath("$.type").value("errors/category-not-found"))
+                .andExpect(jsonPath("$.code").value("CATEGORY_NOT_FOUND"));
+
+        verify(getCategoryByIdUseCase).execute(id);
+    }
+
+    @Test
+    void shouldRejectInvalidCategoryIdBeforeCallingUseCase() throws Exception {
+        // When / Then
+        mockMvc.perform(get("/api/v1/categories/not-a-uuid"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(getCategoryByIdUseCase);
+    }
 
     @Test
     @DisplayName("should create category successfully")
