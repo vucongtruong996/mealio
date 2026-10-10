@@ -1,6 +1,8 @@
 package com.mealio.mealio_menu_service.domain.repository;
 
 import java.util.Optional;
+import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -21,6 +23,8 @@ public interface CategoryRepository {
     Optional<Category> findByName(@NonNull String name);
 
     boolean existsByName(@NonNull String name);
+
+    Set<String> findExistingNames(Collection<String> names);
 
     @NonNull
     Page<Category> findAll(@NonNull Pageable pageable);

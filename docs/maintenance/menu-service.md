@@ -6,6 +6,8 @@
 
 This guide describes current behavior, not all planned platform capabilities. Consult the [engineering standard](../architecture/00-project-engineering-standard.md) for concepts and the feature specifications for detailed contracts.
 
+Start with the [complete Category specification and roadmap](../features/category-api-spec.md) for the consolidated endpoint contracts and feature status. Use this guide to locate and verify modifications.
+
 ## 1. Current API behavior
 
 All paths below start with `/api/v1/categories`.
@@ -13,7 +15,7 @@ All paths below start with `/api/v1/categories`.
 | Method/path | Current behavior | Maintenance notes |
 |---|---|---|
 | `POST /` | Create one category; `201` and `Location` | Duplicate precheck exists |
-| `POST /bulk` | Create a batch; `201` and array | Duplicate/batch validation still incomplete |
+| `POST /bulk` | Create 1–100 categories; `201` and ordered array | Reject normalized request duplicates and existing names before saving |
 | `GET /` | List page content; `200` and array | Pagination metadata is currently discarded |
 | `GET /{id}` | Get category, including inactive; `200` or `404` | Invalid UUID produces `400` |
 | `PUT /{id}` | Replace name/description; `200`, `404`, or prechecked `409` | Both fields required; preserves ID and active state |
@@ -21,7 +23,7 @@ All paths below start with `/api/v1/categories`.
 
 Category responses contain `id`, `name`, `description`, and **`isActive`**. Do not rename `isActive` to `active` without a deliberate API compatibility decision. Audit fields are not part of these responses.
 
-Update requires nonblank name/description with request limits of 100/500 characters. Domain methods trim whitespace. Create currently allows missing descriptions at the request boundary but rejects them in the domain; do not copy this inconsistency into another feature.
+Create, bulk create, and update require nonblank name/description with request limits of 100/500 characters. Domain methods trim whitespace. Bulk requests reject empty/oversized arrays and null elements before invoking the use case.
 
 The `404` handler returns `ProblemDetail` with code `CATEGORY_NOT_FOUND`. The existing duplicate handler also uses `ProblemDetail`, but does not currently include a `code` property. Do not assume every error has the same shape.
 
@@ -40,6 +42,7 @@ Java paths are relative to `mealio-menu-service/src/main/java/com/mealio/mealio_
 | Business validation or state transitions | `domain/model/Category.java` | Domain tests plus affected use cases |
 | Persistence contract | `domain/repository/CategoryRepository.java` | All callers and adapter tests |
 | Queries/entity updates | `infrastructure/persistence/repository/` | PostgreSQL integration tests |
+| Bulk name conflicts | `CategoryRepository.findExistingNames` and its JPA projection | Bulk unit tests and SQL-count integration test |
 | Domain/entity conversion | `infrastructure/persistence/mapper/CategoryPersistenceMapper.java` | Mapper and persistence tests |
 | Table/column mapping | `infrastructure/persistence/entity/CategoryEntity.java` | Migration and PostgreSQL tests |
 | Audit identity/timestamps | `infrastructure/audit/` | Audit and mutation integration tests |
@@ -64,6 +67,9 @@ Request → Controller → Command/use-case interface
 - `save()` does not guarantee SQL has executed. Constraint errors can appear during flush or commit.
 - `CategoryPersistenceRepository.save()` loads an existing entity before applying business-field changes. Preserve this behavior: merging a fresh entity previously cleared creation audit fields in memory.
 - Loading a domain object does not make it a JPA-managed entity. The adapter performs the persistence conversion/update.
+- Bulk checks stored names with one projection query after in-memory validation. Preserve request-order conflict reporting and avoid reintroducing one query per category.
+- Single create normalizes and validates the domain object before its name query; the application operation is transactional.
+- Audit configuration is a scanned `@Configuration`; the default `SYSTEM` actor provider is a component. Verify normal startup with `CategoryApiIT`, not only explicit test imports of auditing beans.
 
 ## 4. Procedure for a modification
 
@@ -89,9 +95,9 @@ Decide whether it is writable, readable, optional, and persisted. Update the app
 
 Define normalization and case sensitivity first. Align single create, bulk create, update, and database constraints. Update must exclude the current category from conflicts. Test whitespace, unchanged names, different owners, and concurrent attempts. Prechecks improve messages but cannot replace database enforcement.
 
-### Make descriptions optional
+### Make descriptions optional in a future change
 
-Align create/update request constraints, domain normalization, nullability annotations, persistence mapping, response semantics, and existing rows. Decide whether blank becomes null. The current mapper substitutes an empty string for null, which the domain rejects; address the entire path together.
+Descriptions are currently required across create/update. To change this, align request constraints, domain normalization, nullability annotations, persistence mapping, response semantics, and existing rows. Decide whether blank becomes null. The current mapper substitutes an empty string for null, which the domain rejects; address the entire path together.
 
 ### Change deletion policy
 
@@ -127,32 +133,35 @@ If Mockito cannot initialize its agent, inspect the JDK and execution restrictio
 
 | Suite | Reported cases |
 |---|---:|
-| `CreateCategoryUseCaseTest` | 4 |
+| `CreateCategoryUseCaseTest` | 6 |
 | `GetCategoryByIdUseCaseTest` | 3 |
+| `BulkCreateCategoryUseCaseTest` | 8 |
 | `UpdateCategoryUseCaseTest` | 6 |
 | `DeleteCategoryUseCaseTest` | 3 |
 | `CategoryTest` | 3 |
 | `CategoryPersistenceMapperTest` | 4 |
 | `CategoryPresentationMapperTest` | 2 |
 | `CategoryAuditingIntegrationTest` | 2 |
-| `CategoryControllerTest` | 12 |
+| `CategoryControllerTest` | 24 |
 | `CategoryMutationControllerTest` | 14 |
 | `CategoryPersistenceRepositoryIT` | 2 |
 | `CategoryMutationIT` | 4 |
-| **Total** | **59** |
+| `CategoryBulkIT` | 8 |
+| `CategoryApiIT` | 12 |
+| **Total** | **101** |
 
-Last full run: 53 Surefire + 6 Failsafe cases; no failures, errors, or skips. This is a dated snapshot, not a guarantee for future changes.
+Last full run after real HTTP verification and the audit-wiring fix: 75 Surefire + 26 Failsafe cases; no failures, errors, or skips. This is a dated snapshot, not a guarantee for future changes.
 
 Four reported cases are empty: both `CategoryPresentationMapperTest` methods and the pagination/sorting methods in `CategoryControllerTest`. `CreateCategoryUseCaseTest.shouldInitializeAuditFields` only checks a save interaction because its audit assertions are commented out. Actual audit checks exist in the JPA audit and PostgreSQL mutation tests.
 
-MockMvc suites mock use cases. PostgreSQL mutation tests run in test-managed transactions. Neither establishes a complete HTTP-to-database commit test or concurrent-race behavior.
+MockMvc suites mock use cases. PostgreSQL mutation tests run in test-managed transactions. Bulk integration tests instead disable the test transaction and inspect state after actual application commit/rollback; one stubs a stale name precheck while retaining real SQL. `CategoryApiIT` starts the actual server and uses HTTP with real application beans and PostgreSQL. An actual multi-threaded race remains untested.
 
 ## 7. Known work to track
 
 | Gap | Next action |
 |---|---|
-| Bulk validation and duplicate handling | Specify and test all-or-nothing behavior |
-| Optional-description inconsistency | Agree on one contract across all layers |
+| Concurrent bulk duplicate error translation | Recognize the name constraint without mislabeling unrelated failures |
+| Optional descriptions | Required behavior is now consistent; optionality needs an explicit future decision |
 | Pagination metadata discarded | Agree on public response and implement real tests |
 | Four empty tests | Replace with assertions or remove misleading placeholders |
 | Misnamed audit unit test | Rename/remove redundant test or add appropriate assertions |
@@ -162,6 +171,7 @@ MockMvc suites mock use cases. PostgreSQL mutation tests run in test-managed tra
 | Flyway/Hibernate alignment | Explicit schema ownership, constraints, and validation |
 | API-standard envelope differs from current errors | Record and apply a compatibility decision |
 | Administrative authorization | Define access policy before external exposure |
+| Historical null audit fields | Audit wiring is fixed for new writes; define a data-repair policy for any older rows |
 
 ## 8. Change record and reusable template
 
@@ -170,6 +180,9 @@ MockMvc suites mock use cases. PostgreSQL mutation tests run in test-managed tra
 | 2026-10-10 | Get-by-ID implemented | [Lookup specification and TDD record](../features/category-get-by-id.md) |
 | 2026-10-10 | Update/delete implemented; creation audit preservation fixed | [Mutation specification and TDD record](../features/category-update-delete.md) |
 | 2026-10-10 | Full suite verified; maintenance baseline documented | 59 reported passing cases, with coverage limitations above |
+| 2026-10-10 | Bulk validation and duplicate prechecks implemented | [Bulk specification](../features/category-bulk-validation.md); includes post-transaction PostgreSQL checks |
+| 2026-10-10 | Stage 1 query optimization | [Optimization specification](../features/category-query-optimization.md); one bulk name query and normalized single create |
+| 2026-10-10 | Real HTTP verification; audit beans registered for normal startup | [Verification record](../features/category-api-verification.md); all 101 reported cases pass |
 
 For a future change, create `docs/features/<feature-name>.md` using:
 

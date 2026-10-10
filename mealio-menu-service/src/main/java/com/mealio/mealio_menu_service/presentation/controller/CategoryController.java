@@ -31,6 +31,8 @@ import com.mealio.mealio_menu_service.presentation.request.UpdateCategoryRequest
 import com.mealio.mealio_menu_service.presentation.response.CategoryResponse;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -60,7 +62,8 @@ public class CategoryController {
 
     @PostMapping("/bulk")
     public ResponseEntity<List<CategoryResponse>> createCategories(
-            @Valid @RequestBody @NonNull List<CreateCategoryRequest> requests) {
+            @Valid @RequestBody @Size(min = 1, max = 100)
+            List<@NotNull @Valid CreateCategoryRequest> requests) {
         List<CreateCategoryCommand> commands = requests.stream()
                 .map(CategoryPresentationMapper::toCreateCategoryCommand)
                 .toList();

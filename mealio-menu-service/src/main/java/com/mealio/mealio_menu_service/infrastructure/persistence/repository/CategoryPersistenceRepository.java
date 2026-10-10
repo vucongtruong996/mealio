@@ -13,6 +13,8 @@ import com.mealio.mealio_menu_service.infrastructure.persistence.entity.Category
 import com.mealio.mealio_menu_service.infrastructure.persistence.mapper.CategoryPersistenceMapper;
 
 import java.util.Objects;
+import java.util.Collection;
+import java.util.Set;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
@@ -72,6 +74,16 @@ public class CategoryPersistenceRepository implements CategoryRepository {
         Objects.requireNonNull(name, "name must not be null");
 
         return jpaCategoryRepository.existsByName(name);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<String> findExistingNames(Collection<String> names) {
+        Objects.requireNonNull(names, "names must not be null");
+        if (names.isEmpty()) {
+            return Set.of();
+        }
+        return jpaCategoryRepository.findExistingNames(names);
     }
 
     @Override

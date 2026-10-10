@@ -13,6 +13,8 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -66,6 +68,82 @@ public class CategoryControllerTest {
 
     @MockitoBean
     private DeleteCategoryUseCase deleteCategoryUseCase;
+
+    @Test
+    void shouldCreateBulkCategoriesInResponseOrder() throws Exception {
+        // Given
+        List<CreateCategoryCommand> commands = List.of(
+                new CreateCategoryCommand("Breakfast", "Morning meals"),
+                new CreateCategoryCommand("Lunch", "Afternoon meals"));
+        UUID firstId = UUID.randomUUID();
+        UUID secondId = UUID.randomUUID();
+        when(bulkCreateCategoryUseCase.executeBulk(commands)).thenReturn(List.of(
+                new CategoryResult(firstId, "Breakfast", "Morning meals", true),
+                new CategoryResult(secondId, "Lunch", "Afternoon meals", true)));
+
+        // When / Then
+        mockMvc.perform(post("/api/v1/categories/bulk")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commands)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(firstId.toString()))
+                .andExpect(jsonPath("$[1].id").value(secondId.toString()))
+                .andExpect(jsonPath("$[0].isActive").value(true));
+        verify(bulkCreateCategoryUseCase).executeBulk(commands);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"[]", "[null]", "[{}]", "[",
+            "[{\"name\":\" \",\"description\":\"Meals\"}]",
+            "[{\"name\":\"Breakfast\"}]",
+            "[{\"name\":\"Breakfast\",\"description\":\" \"}]"})
+    void shouldRejectInvalidBulkRequestsBeforeCallingUseCase(String json) throws Exception {
+        // When / Then
+        mockMvc.perform(post("/api/v1/categories/bulk")
+                        .contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(bulkCreateCategoryUseCase);
+    }
+
+    @Test
+    void shouldRejectOversizedBulkBeforeCallingUseCase() throws Exception {
+        // Given
+        List<CreateCategoryCommand> commands = java.util.stream.IntStream.range(0, 101)
+                .mapToObj(i -> new CreateCategoryCommand("Category " + i, "Meals")).toList();
+
+        // When / Then
+        mockMvc.perform(post("/api/v1/categories/bulk")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commands)))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(bulkCreateCategoryUseCase);
+    }
+
+    @Test
+    void shouldReturnConflictWhenBulkCategoryAlreadyExists() throws Exception {
+        // Given
+        List<CreateCategoryCommand> commands = List.of(new CreateCategoryCommand("Breakfast", "Meals"));
+        when(bulkCreateCategoryUseCase.executeBulk(commands))
+                .thenThrow(new CategoryAlreadyExistsException("Breakfast"));
+
+        // When / Then
+        mockMvc.perform(post("/api/v1/categories/bulk")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commands)))
+                .andExpect(status().isConflict());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"{\"name\":\"Breakfast\"}",
+            "{\"name\":\"Breakfast\",\"description\":\" \"}"})
+    void shouldRejectInvalidDescriptionOnSingleCreate(String json) throws Exception {
+        // When / Then
+        mockMvc.perform(post("/api/v1/categories")
+                        .contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(createCategoryUseCase);
+    }
 
     @Test
     void shouldReturnCategoryById() throws Exception {

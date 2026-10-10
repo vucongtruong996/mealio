@@ -26,10 +26,35 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CreateCategoryUseCaseTest {
+
+    @Test
+    void shouldCheckNormalizedNameBeforeSaving() {
+        // Given
+        when(categoryRepository.existsByName("Breakfast")).thenReturn(true);
+
+        // When / Then
+        assertThatThrownBy(() -> createCategoryUseCase.execute(
+                new CreateCategoryCommand(" Breakfast ", " Morning meals ")))
+                .isInstanceOf(CategoryAlreadyExistsException.class)
+                .hasMessage("Category 'Breakfast' already exists.");
+        verify(categoryRepository).existsByName("Breakfast");
+        verify(categoryRepository, never()).save(any());
+        verifyNoInteractions(categoryApplicationMapper);
+    }
+
+    @Test
+    void shouldValidateDescriptionBeforeQueryingRepository() {
+        // When / Then
+        assertThatThrownBy(() -> createCategoryUseCase.execute(
+                new CreateCategoryCommand("Breakfast", " ")))
+                .isInstanceOf(com.mealio.mealio_menu_service.domain.exception.CategoryNameCannotBeBlankException.class);
+        verifyNoInteractions(categoryRepository, categoryApplicationMapper);
+    }
 
     @Mock
     private CategoryRepository categoryRepository;

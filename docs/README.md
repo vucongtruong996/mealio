@@ -2,9 +2,13 @@
 
 ## Maintaining the menu service
 
+- [Complete Category specification and roadmap](features/category-api-spec.md): all endpoints, shared rules, feature status, acceptance evidence, and pending work. Start here for Category changes.
 - [Menu service maintenance guide](maintenance/menu-service.md): current contracts, code map, modification recipes, tests, known gaps, and change record.
 - [Get Category by ID](features/category-get-by-id.md): lookup contract and TDD walkthrough.
 - [Category update and delete](features/category-update-delete.md): mutation contracts, auditing fix, TDD evidence, and complete source links.
+- [Category bulk validation](features/category-bulk-validation.md): batch limits, duplicate checks, request validation, and transaction verification.
+- [Category query optimization](features/category-query-optimization.md): one bulk conflict query, SQL-count verification, and normalized single creation.
+- [Real Category API verification](features/category-api-verification.md): actual HTTP-to-PostgreSQL checks and the application audit-wiring fix.
 
 ## Learning and architecture
 
