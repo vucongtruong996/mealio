@@ -1,5 +1,20 @@
 # Mealio Documentation
 
+## AI engineering workflow
+
+- [Harness skill](../.agents/skills/harness/SKILL.md): propose → approve → deliver, with one reviewable SPEC/PLAN, scoped TDD, and actual verification evidence.
+- [Scope and approval rules](../.ai/rules/scope.md): review and strict approval channels, protected operations, and enforcement limitations.
+- [Harness and scope hook specification](features/engineering-scope-hook.md): observable tooling behavior and boundaries.
+
+Example prompt: `$harness propose <feature>. Preview first.`
+Review the outcome, evidence/assumptions, acceptance examples, affected files,
+test commands, and unresolved decisions together. Then approve the combined
+SPEC/PLAN to authorize implementation. SPEC-only approval does not start coding.
+The agent continues in-scope tests and fixes, reviews its diff, and delivers actual
+results and limitations. Scope changes and consequential operations need separate
+authorization. Small tasks stay in chat; complex tasks reuse one SPEC and one PLAN.
+Blocked checks are reported honestly; instructions cannot guarantee zero errors.
+
 ## Maintaining the menu service
 
 - [Complete Category specification and roadmap](features/category-api-spec.md): all endpoints, shared rules, feature status, acceptance evidence, and pending work. Start here for Category changes.

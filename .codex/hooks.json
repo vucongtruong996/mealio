@@ -1,0 +1,57 @@
+{
+  "description": "MealIO detailed SPEC/PLAN approval and implementation review.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -B \"$(git rev-parse --show-toplevel)/scripts/hooks/codex_scope_hook.py\" --repo \"$(git rev-parse --show-toplevel)\" --mode review",
+            "timeout": 30,
+            "statusMessage": "Loading MealIO review workflow",
+            "additionalContextLimit": 1000
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -B \"$(git rev-parse --show-toplevel)/scripts/hooks/codex_scope_hook.py\" --repo \"$(git rev-parse --show-toplevel)\" --mode review",
+            "timeout": 30,
+            "statusMessage": "MealIO workflow hook"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -B \"$(git rev-parse --show-toplevel)/scripts/hooks/codex_scope_hook.py\" --repo \"$(git rev-parse --show-toplevel)\" --mode review",
+            "timeout": 30,
+            "statusMessage": "MealIO workflow hook",
+            "additionalContextLimit": 1000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -B \"$(git rev-parse --show-toplevel)/scripts/hooks/codex_scope_hook.py\" --repo \"$(git rev-parse --show-toplevel)\" --mode review",
+            "timeout": 30,
+            "statusMessage": "MealIO workflow hook"
+          }
+        ]
+      }
+    ]
+  }
+}

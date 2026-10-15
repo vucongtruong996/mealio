@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "task_id": "scope-hook",
+  "objective": "Implement the approved cross-repository engineering scope hook using TDD",
+  "components": ["engineering tooling", "contributor documentation", "Codex lifecycle hooks"],
+  "acceptance_criteria": [
+    "SC01-SC03: distinguish inspection, approved actions, and scope amendments",
+    "SC04-SC07: protect paths, approval revisions, existing edits, and sensitive operations",
+    "SC08-SC10: use supported hook responses with meaningful automated coverage"
+  ],
+  "spec": "docs/features/engineering-scope-hook.md",
+  "plan": ".ai/tasks/scope-hook.md",
+  "change_kind": "code",
+  "allowed_write_paths": [
+    "AGENTS.md",
+    "docs/README.md",
+    "docs/features/engineering-scope-hook.md",
+    ".ai/rules/scope.md",
+    ".ai/templates/scope.json",
+    ".ai/tasks/scope-hook.md",
+    ".ai/tasks/scope-hook.scope.json",
+    "scripts/scope_guard.py",
+    "scripts/hooks/codex_scope_hook.py",
+    "scripts/tests/test_scope_guard.py",
+    ".codex/hooks.json"
+  ],
+  "allow_dirty_paths": [],
+  "generated_paths": [],
+  "allowed_commands": [
+    {
+      "argv": ["python3", "-B", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_scope_guard.py", "-v"],
+      "cwd": ".",
+      "operation": "test"
+    }
+  ],
+  "operations": ["policy"],
+  "exclusions": [
+    "Application code, Category behavior, database, dependencies, infrastructure, and historical handover",
+    "Broader harness implementation, commit, push, and deployment",
+    "AI self-approval or automatic trust of the installed hooks"
+  ],
+  "tdd": {
+    "red": "Write checker and subprocess-adapter tests first, run unittest, and observe the missing checker failure; add failing regression cases before fixes",
+    "green": "Implement the shared checker, human approval CLI, hook adapter, and registration until the same suite passes",
+    "refactor": "Consolidate path, revision, and command checks; rerun the full checker suite and review scope and documentation"
+  }
+}

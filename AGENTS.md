@@ -36,3 +36,11 @@ Follow the documented convention reflected in recent commits: `type(scope): desc
 ## Security & Configuration
 
 Treat committed database credentials as local development defaults. Supply deployment secrets through environment configuration; never commit secrets or log tokens, passwords, or sensitive health data.
+
+## AI Task Scope & Approval
+
+Use the [harness skill](.agents/skills/harness/SKILL.md) for the development workflow,
+review checkpoints, TDD, and documentation proportional to the task. Follow
+[scope and approval rules](.ai/rules/scope.md): chat approval in review mode,
+strict enforcement when selected, protection of existing edits, and explicit consequential
+operation authorization. Keep process explanations out of routine review messages.

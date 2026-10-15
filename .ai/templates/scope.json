@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "task_id": "replace-with-task-id",
+  "spec": "docs/features/replace-with-feature.md",
+  "plan": ".ai/tasks/replace-with-task-id.plan.md",
+  "allowed_write_paths": [
+    "replace-with-service/src/main/java/replace/Feature.java",
+    "replace-with-service/src/test/java/replace/FeatureTest.java"
+  ],
+  "allow_dirty_paths": [],
+  "generated_paths": [
+    "replace-with-service/target/**"
+  ],
+  "allowed_commands": [
+    {
+      "argv": [
+        "./mvnw",
+        "clean",
+        "verify"
+      ],
+      "cwd": "replace-with-service",
+      "operation": "test"
+    }
+  ],
+  "operations": []
+}
